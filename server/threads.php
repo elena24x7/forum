@@ -2,7 +2,17 @@
   require_once('./mysqli_connect.php');
 
   $data;
-  $query = 'SELECT * FROM threads';
+  $query = 'SELECT
+              threads.id AS id,
+              threads.title AS title,
+              threads.date_created AS dateCreated,
+              users.username AS poster
+            FROM
+              threads
+            LEFT JOIN
+              users
+            ON
+              threads.original_poster = users.id';
   $response = $dbc->query($query);
 
   $index = 0;
