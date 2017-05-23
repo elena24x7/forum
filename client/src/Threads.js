@@ -17,7 +17,7 @@ class Threads extends Component {
       .then(response => response.json())
       .then(json => {
         this.setState({
-          threads: json
+          threads: json || []
         });
       })
       .catch(err => {

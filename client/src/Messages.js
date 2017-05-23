@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { ListGroup, ListGroupItem } from 'react-bootstrap';
+import { Button, Form, FormGroup, FormControl, ListGroup, ListGroupItem } from 'react-bootstrap';
 
 import { baseURL } from './config.json';
 
@@ -7,21 +7,47 @@ class Messages extends Component {
   constructor() {
     super();
     this.state = {
-      messages: []
+      messages: [],
+      threadId: null
     };
   }
 
-  componentDidMount() {
+  fetchMessages() {
     fetch(`${baseURL}/messages.php?thread_id=${this.props.threadId}`)
       .then(response => response.json())
       .then(json => {
         this.setState({
-          messages: json
+          messages: json || [],
+          threadId: this.props.threadId
         });
       })
       .catch(err => {
         console.log(err);
       });
+  }
+
+  postMessage(event) {
+    event.preventDefault();
+    let form = document.querySelector('form');
+    let formData = new FormData(form);
+    formData.append('poster', this.props.user.id);
+    formData.append('thread_id', this.props.threadId);
+
+    fetch(`${baseURL}/message_add.php`, {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .catch(err => {
+        console.log(err);
+      });
+
+    form.reset();
+    this.fetchMessages();
+  }
+
+  componentDidMount() {
+    this.fetchMessages();
   }
 
   render() {
@@ -47,10 +73,34 @@ class Messages extends Component {
     );
 
     return (
-      <ListGroup>
-        {messages}
-      </ListGroup>
+      <div>
+        <ListGroup>
+          {messages}
+        </ListGroup>
+        <MessageForm
+          loggedIn={this.props.loggedIn}
+          postMessage={this.postMessage.bind(this)}
+        />
+      </div>
     );
+  }
+}
+
+class MessageForm extends Component {
+  render() {
+    if (this.props.loggedIn) {
+      return (
+        <Form inline onSubmit={this.props.postMessage}>
+          <FormGroup>
+            <FormControl type="text" name="body" placeholder="Сообщение" />
+          </FormGroup>
+          {' '}
+          <Button type="submit">Написать</Button>
+        </Form>
+      );
+    } else {
+      return null;
+    }
   }
 }
 

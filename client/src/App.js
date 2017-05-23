@@ -42,12 +42,18 @@ class App extends Component {
   }
 
   render() {
+    let loggedIn = this.state.user || false;
+    
     let Body = () => {
       if (this.state.display === 'messages') {
-        return <Messages threadId={this.state.threadId} />;
+        return (
+          <Messages
+            user={this.state.user}
+            loggedIn={loggedIn}
+            threadId={this.state.threadId}
+          />
+        );
       }
-
-      let loggedIn = this.state.user || false;
 
       return (
         <Threads
