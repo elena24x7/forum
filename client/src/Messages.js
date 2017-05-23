@@ -1,5 +1,12 @@
 import React, { Component } from 'react';
-import { Button, Form, FormGroup, FormControl, ListGroup, ListGroupItem } from 'react-bootstrap';
+import {
+  Button,
+  Form,
+  FormGroup,
+  FormControl,
+  ListGroup,
+  ListGroupItem
+} from 'react-bootstrap';
 
 import { baseURL } from './config.json';
 
@@ -8,7 +15,11 @@ class Messages extends Component {
     super();
     this.state = {
       messages: [],
-      threadId: null
+      threadId: null,
+      replyTo: {
+        poster: null,
+        posterName: null
+      }
     };
   }
 
@@ -32,6 +43,8 @@ class Messages extends Component {
     let formData = new FormData(form);
     formData.append('poster', this.props.user.id);
     formData.append('thread_id', this.props.threadId);
+    if (this.state.replyTo.poster)
+      formData.append('reply_to', this.props.threadId);
 
     fetch(`${baseURL}/message_add.php`, {
       method: 'POST',
@@ -43,7 +56,24 @@ class Messages extends Component {
       });
 
     form.reset();
-    this.fetchMessages();
+
+    this.setState({
+      replyTo: {
+        poster: null,
+        posterName: null
+      }
+    });
+
+    setTimeout(() => this.fetchMessages(), 500);
+  }
+
+  selectReplyTo(id, poster, posterName, event) {
+    this.setState({
+      replyTo: {
+        poster,
+        posterName
+      }
+    });
   }
 
   componentDidMount() {
@@ -61,8 +91,15 @@ class Messages extends Component {
 
     const messages = this.state.messages.map(
       ({ id, body, datePosted, poster, posterName, replyToName }) => {
+        let clickHandler = this.selectReplyTo.bind(
+          this,
+          id,
+          poster,
+          posterName
+        );
+
         return (
-          <ListGroupItem key={id.toString()}>
+          <ListGroupItem key={id.toString()} onClick={clickHandler}>
             <h4>{posterName} ({poster})</h4>
             <p>{body}</p>
             <span>в {datePosted}</span>
@@ -78,6 +115,7 @@ class Messages extends Component {
           {messages}
         </ListGroup>
         <MessageForm
+          replyTo={this.state.replyTo}
           loggedIn={this.props.loggedIn}
           postMessage={this.postMessage.bind(this)}
         />
@@ -89,13 +127,18 @@ class Messages extends Component {
 class MessageForm extends Component {
   render() {
     if (this.props.loggedIn) {
+      let buttonText = 'Написать';
+
+      if (this.props.replyTo.poster)
+        buttonText = `Ответить ${this.props.replyTo.posterName}`;
+
       return (
         <Form inline onSubmit={this.props.postMessage}>
           <FormGroup>
             <FormControl type="text" name="body" placeholder="Сообщение" />
           </FormGroup>
           {' '}
-          <Button type="submit">Написать</Button>
+          <Button type="submit">{buttonText}</Button>
         </Form>
       );
     } else {
