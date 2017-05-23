@@ -2,7 +2,20 @@
   require_once('./mysqli_connect.php');
 
   $data;
-  $query = 'SELECT * FROM messages';
+  $thread_id = $_GET['thread_id'];
+  $query = "SELECT
+              messages.id AS id,
+              messages.body AS body,
+              messages.poster AS poster,
+              messages.reply_to AS replyTo
+            FROM
+              messages
+            LEFT JOIN
+              users
+            ON
+              users.id = messages.reply_to
+            WHERE
+              messages.thread_id = '$thread_id'";
   $response = $dbc->query($query);
 
   $index = 0;
