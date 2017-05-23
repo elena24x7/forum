@@ -1,41 +1,39 @@
 import React, { Component } from 'react';
 import { Grid } from 'react-bootstrap';
 
-import { baseURL } from './config.json';
 import { LoginForm } from './Forms';
+import Messages from './Messages';
 import Threads from './Threads';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
-      data: []
+      display: 'threads',
+      threadId: null
     };
   }
 
-  componentDidMount() {
-    fetch(`${baseURL}/threads.php`)
-      .then(response => response.json())
-      .then(json => {
-        this.setState({
-          data: json
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
-  showMessages(event) {
-    console.log(event);
+  displayMessages(id) {
+    this.setState({
+      display: 'messages',
+      threadId: id
+    });
   }
 
   render() {
-    let props = { threads: this.state.data, clickHandler: this.showMessages };
+    let Body = () => {
+      if (this.state.display === 'messages') {
+        return <Messages threadId={this.state.threadId} />;
+      }
+
+      return <Threads clickHandler={this.displayMessages.bind(this)} />;
+    };
+
     return (
       <Grid fluid>
         <LoginForm />
-        <Threads {...props} />
+        <Body />
       </Grid>
     );
   }

@@ -6,14 +6,20 @@
   $query = "SELECT
               messages.id AS id,
               messages.body AS body,
-              messages.poster AS poster,
-              messages.reply_to AS replyTo
+              messages.date_posted AS datePosted,
+              u1.username AS poster,
+              u1.fullname AS posterName,
+              u2.username AS replyToName
             FROM
               messages
             LEFT JOIN
-              users
+              users AS u1
             ON
-              users.id = messages.reply_to
+              u1.id = messages.poster
+            LEFT JOIN
+              users AS u2
+            ON
+              u2.id = messages.reply_to
             WHERE
               messages.thread_id = '$thread_id'";
   $response = $dbc->query($query);
