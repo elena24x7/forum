@@ -1,36 +1,20 @@
 import React, { Component } from 'react';
 import { Table } from 'react-bootstrap';
 
-import { baseURL } from './config.json';
+import './Threads.css';
 
 class Threads extends Component {
-  constructor() {
-    super();
-    this.state = {
-      data: []
-    };
-  }
-
-  componentDidMount() {
-    fetch(`${baseURL}/threads.php`)
-      .then(response => response.json())
-      .then(json => {
-        this.setState({
-          data: json
-        });
-      })
-      .catch(err => {
-        console.log(err);
-      });
-  }
-
   render() {
-    const data = this.state.data.map(
-      ({ date_created: date, id, original_poster: poster, title }) => {
+    const threads = this.props.threads.map(
+      ({ id, title, dateCreated, poster }) => {
         return (
-          <tr key={id.toString()}>
+          <tr
+            className="highlight"
+            onClick={this.props.clickHandler}
+            key={id.toString()}
+          >
             <td>{id}</td>
-            <td>{date}</td>
+            <td>{dateCreated}</td>
             <td>{poster}</td>
             <td>{title}</td>
           </tr>
@@ -48,7 +32,7 @@ class Threads extends Component {
           </tr>
         </thead>
         <tbody>
-          {data}
+          {threads}
         </tbody>
       </Table>
     );
