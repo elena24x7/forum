@@ -1,12 +1,5 @@
 import React, { Component } from 'react';
-import {
-  Button,
-  ControlLabel,
-  Form,
-  FormControl,
-  FormGroup,
-  Grid
-} from 'react-bootstrap';
+import { Button, Form, FormControl, FormGroup } from 'react-bootstrap';
 
 class LoginForm extends Component {
   render() {
