@@ -1,16 +1,18 @@
 import React, { Component } from 'react';
-import { Grid } from 'react-bootstrap';
+import { Alert, Grid, PageHeader } from 'react-bootstrap';
 
-import { LoginForm } from './Forms';
+import LoginForm from './LoginForm';
 import Messages from './Messages';
 import Threads from './Threads';
+import { baseURL } from './config.json';
 
 class App extends Component {
   constructor() {
     super();
     this.state = {
       display: 'threads',
-      threadId: null
+      threadId: null,
+      user: null
     };
   }
 
@@ -19,6 +21,24 @@ class App extends Component {
       display: 'messages',
       threadId: id
     });
+  }
+
+  logIn(event) {
+    event.preventDefault();
+    let form = document.querySelector('form');
+
+    fetch(`${baseURL}/login.php`, { method: 'POST', body: new FormData(form) })
+      .then(response => response.json())
+      .then(json => {
+        this.setState({
+          user: json
+        });
+      })
+      .catch(err => {
+        console.log(err);
+      });
+
+    form.reset();
   }
 
   render() {
@@ -30,9 +50,20 @@ class App extends Component {
       return <Threads clickHandler={this.displayMessages.bind(this)} />;
     };
 
+    let UserForm = () => {
+      if (this.state.user) {
+        return null;
+      }
+
+      return <LoginForm clickHandler={this.logIn.bind(this)} />;
+    };
+
     return (
       <Grid fluid>
-        <LoginForm />
+        <PageHeader>
+          Форум
+          <UserForm />
+        </PageHeader>
         <Body />
       </Grid>
     );
