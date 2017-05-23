@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table } from 'react-bootstrap';
+import { Button, Form, FormControl, FormGroup, Table } from 'react-bootstrap';
 
 import { baseURL } from './config.json';
 import './Threads.css';
@@ -12,7 +12,7 @@ class Threads extends Component {
     };
   }
 
-  componentDidMount() {
+  fetchThreads() {
     fetch(`${baseURL}/threads.php`)
       .then(response => response.json())
       .then(json => {
@@ -25,9 +25,32 @@ class Threads extends Component {
       });
   }
 
-  onClick(id) {
+  createThread(event) {
+    event.preventDefault();
+    let form = document.querySelector('form');
+    let formData = new FormData(form);
+    formData.append('original_poster', this.props.user.id);
+
+    fetch(`${baseURL}/thread_add.php`, {
+      method: 'POST',
+      body: formData
+    })
+      .then(response => response.json())
+      .catch(err => {
+        console.log(err);
+      });
+
+    form.reset();
+    this.fetchThreads();
+  }
+
+  componentDidMount() {
+    this.fetchThreads();
+  }
+
+  displayMessages(id) {
     return () => {
-      this.props.clickHandler(id);
+      this.props.displayMessages(id);
     };
   }
 
@@ -37,7 +60,7 @@ class Threads extends Component {
         return (
           <tr
             className="highlight"
-            onClick={this.onClick(id)}
+            onClick={this.displayMessages(id)}
             key={id.toString()}
           >
             <td>{id}</td>
@@ -50,20 +73,44 @@ class Threads extends Component {
     );
 
     return (
-      <Table striped>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th>Дата создания</th>
-            <th>ОП</th>
-            <th>Название</th>
-          </tr>
-        </thead>
-        <tbody>
-          {threads}
-        </tbody>
-      </Table>
+      <div>
+        <Table striped>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Дата создания</th>
+              <th>ОП</th>
+              <th>Название</th>
+            </tr>
+          </thead>
+          <tbody>
+            {threads}
+          </tbody>
+        </Table>
+        <ThreadForm
+          loggedIn={this.props.loggedIn}
+          createThread={this.createThread.bind(this)}
+        />
+      </div>
     );
+  }
+}
+
+class ThreadForm extends Component {
+  render() {
+    if (this.props.loggedIn) {
+      return (
+        <Form inline onSubmit={this.props.createThread}>
+          <FormGroup>
+            <FormControl type="text" name="title" placeholder="Тема" />
+          </FormGroup>
+          {' '}
+          <Button type="submit">Добавить</Button>
+        </Form>
+      );
+    } else {
+      return null;
+    }
   }
 }
 

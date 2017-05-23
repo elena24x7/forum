@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Alert, Grid, PageHeader } from 'react-bootstrap';
+import { Grid, PageHeader } from 'react-bootstrap';
 
 import LoginForm from './LoginForm';
 import Messages from './Messages';
@@ -31,7 +31,7 @@ class App extends Component {
       .then(response => response.json())
       .then(json => {
         this.setState({
-          user: json
+          user: json[0]
         });
       })
       .catch(err => {
@@ -47,7 +47,15 @@ class App extends Component {
         return <Messages threadId={this.state.threadId} />;
       }
 
-      return <Threads clickHandler={this.displayMessages.bind(this)} />;
+      let loggedIn = this.state.user || false;
+
+      return (
+        <Threads
+          user={this.state.user}
+          loggedIn={loggedIn}
+          displayMessages={this.displayMessages.bind(this)}
+        />
+      );
     };
 
     let UserForm = () => {
