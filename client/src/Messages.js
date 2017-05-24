@@ -113,7 +113,10 @@ class Messages extends Component {
       ({id, body, datePosted, posterId, poster, posterName, replyToName}) => {
         let canDelete = false;
         if (this.props.user) {
-          if (Number(this.props.user.level) === 0) {
+          if (
+            Number(this.props.user.level) === 0 ||
+            Number(this.props.user.level) === 1
+          ) {
             canDelete = true;
           } else if (Number(this.props.user.id) === Number(posterId)) {
             canDelete = true;
