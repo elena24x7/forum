@@ -1,5 +1,14 @@
 import React, {Component} from 'react';
-import {Button, Form, FormControl, FormGroup, Table} from 'react-bootstrap';
+import {
+  Col,
+  Button,
+  Form,
+  FormControl,
+  FormGroup,
+  InputGroup,
+  Row,
+  Table,
+} from 'react-bootstrap';
 
 import {baseURL} from './config.json';
 import './Threads.css';
@@ -108,38 +117,49 @@ class Threads extends Component {
 
     return (
       <div>
-        <Table striped>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Дата создания</th>
-              <th>ОП</th>
-              <th>Название</th>
-            </tr>
-          </thead>
-          <tbody>
-            {threads}
-          </tbody>
-        </Table>
-        <FormCreate
-          loggedIn={loggedIn}
-          createThread={this.createThread.bind(this)}
-        />
+        <Row>
+          <Col lg={12}>
+            <Table striped>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Дата создания</th>
+                  <th>ОП</th>
+                  <th>Название</th>
+                </tr>
+              </thead>
+              <tbody>
+                {threads}
+              </tbody>
+            </Table>
+          </Col>
+        </Row>
+        <Row>
+          <Col lg={12}>
+            <ThreadForm
+              loggedIn={loggedIn}
+              createThread={this.createThread.bind(this)}
+            />
+          </Col>
+        </Row>
       </div>
     );
   }
 }
 
-class FormCreate extends Component {
+class ThreadForm extends Component {
   render() {
     if (this.props.loggedIn) {
       return (
-        <Form inline onSubmit={this.props.createThread}>
+        <Form onSubmit={this.props.createThread}>
           <FormGroup>
-            <FormControl type="text" name="title" placeholder="Тема" />
+            <InputGroup>
+              <FormControl type="text" name="title" placeholder="Тема" />
+              <InputGroup.Button>
+                <Button bsStyle="primary" type="submit">Добавить</Button>
+              </InputGroup.Button>
+            </InputGroup>
           </FormGroup>
-          {' '}
-          <Button type="submit">Добавить</Button>
         </Form>
       );
     } else {
