@@ -44,13 +44,10 @@ class Threads extends Component {
       method: 'POST',
       body: formData,
     })
-      .then((response) => response.json())
-      .catch((err) => {
-        console.log(err);
-      });
+      .then(() => this.fetchThreads())
+      .catch((err) => console.log(err));
 
     form.reset();
-    setTimeout(() => this.fetchThreads(), 500);
   }
 
   deleteThread(threadId, event) {
@@ -64,12 +61,8 @@ class Threads extends Component {
       method: 'POST',
       body: formData,
     })
-      .then((response) => response.json())
-      .catch((err) => {
-        console.log(err);
-      });
-
-    setTimeout(() => this.fetchThreads(), 500);
+      .then(() => this.fetchThreads())
+      .catch((err) => console.log(err));
   }
 
   componentDidMount() {

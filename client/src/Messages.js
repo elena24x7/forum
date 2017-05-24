@@ -29,14 +29,12 @@ class Messages extends Component {
   fetchMessages() {
     fetch(`${baseURL}/messages.php?thread_id=${this.props.thread.id}`)
       .then((response) => response.json())
-      .then((json) => {
+      .then((json) =>
         this.setState({
           messages: json || [],
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+        })
+      )
+      .catch((err) => console.log(err));
   }
 
   postMessage(event) {
@@ -52,10 +50,8 @@ class Messages extends Component {
       method: 'POST',
       body: formData,
     })
-      .then((response) => response.json())
-      .catch((err) => {
-        console.log(err);
-      });
+      .then(() => this.fetchMessages())
+      .catch((err) => console.log(err));
 
     form.reset();
 
@@ -65,8 +61,6 @@ class Messages extends Component {
         name: null,
       },
     });
-
-    setTimeout(() => this.fetchMessages(), 500);
   }
 
   deleteMessage(messageId, event) {
@@ -80,12 +74,8 @@ class Messages extends Component {
       method: 'POST',
       body: formData,
     })
-      .then((response) => response.json())
-      .catch((err) => {
-        console.log(err);
-      });
-
-    setTimeout(() => this.fetchMessages(), 500);
+      .then(() => this.fetchMessages())
+      .catch((err) => console.log(err));
   }
 
   selectReplyTo(msg, name, event) {
