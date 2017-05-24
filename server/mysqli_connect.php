@@ -1,12 +1,11 @@
 <?php
-  DEFINE('DB_USER', 'root');
-  DEFINE('DB_PASS', 'root');
-  DEFINE('DB_HOST', 'db');
-  DEFINE('DB_NAME', 'forum');
-
   $json = file_get_contents("./config.json");
   $config = json_decode($json, true);
 
+  DEFINE('DB_USER', $config['db']['user']);
+  DEFINE('DB_PASS', $config['db']['pass']);
+  DEFINE('DB_HOST', $config['db']['host']);
+  DEFINE('DB_NAME', $config['db']['name']);
   DEFINE('DB_TABLE_MESSAGES', $config['table']['messages']);
   DEFINE('DB_TABLE_THREADS', $config['table']['threads']);
   DEFINE('DB_TABLE_USERS', $config['table']['users']);

@@ -1,4 +1,10 @@
 {
+  "db": {
+    "user": "root",
+    "pass": "root",
+    "host": "db",
+    "name": "forum"
+  },
   "table": {
     "messages": "messages",
     "threads": "threads",
