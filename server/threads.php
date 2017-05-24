@@ -6,7 +6,8 @@
               threads.id AS id,
               threads.title AS title,
               threads.date_created AS dateCreated,
-              users.username AS poster
+              users.username AS poster,
+              users.id AS posterId
             FROM
               threads
             LEFT JOIN

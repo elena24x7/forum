@@ -42,7 +42,26 @@ class Threads extends Component {
       });
 
     form.reset();
-    this.fetchThreads();
+    setTimeout(() => this.fetchThreads(), 500);
+  }
+
+  deleteThread(threadId, event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    let formData = new FormData();
+    formData.append('thread_id', threadId);
+
+    fetch(`${baseURL}/thread_del.php`, {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => response.json())
+      .catch((err) => {
+        console.log(err);
+      });
+
+    setTimeout(() => this.fetchThreads(), 500);
   }
 
   componentDidMount() {
@@ -50,20 +69,36 @@ class Threads extends Component {
   }
 
   render() {
-    const threads = this.state.threads.map(
-      ({id, title, dateCreated, poster}) => {
+    let threads = this.state.threads.map(
+      ({id, title, dateCreated, poster, posterId}) => {
+        let canDelete = false;
+        if (this.props.user) {
+          canDelete = Number(this.props.user.id) === Number(posterId)
+            ? true
+            : false;
+          canDelete = Number(this.props.user.level) === 0 ? true : false;
+        }
+
         let clickHandler = this.props.displayMessages.bind(this, {
           id,
           title,
           dateCreated,
           poster,
         });
+
         return (
           <tr className="highlight" onClick={clickHandler} key={id.toString()}>
             <td>{id}</td>
             <td>{dateCreated}</td>
             <td>{poster}</td>
             <td>{title}</td>
+            <td>
+              <ButtonDelete
+                canDelete={canDelete}
+                clickHandler={this.deleteThread.bind(this)}
+                threadId={id}
+              />
+            </td>
           </tr>
         );
       }
@@ -110,6 +145,24 @@ class FormCreate extends Component {
     } else {
       return null;
     }
+  }
+}
+
+class ButtonDelete extends Component {
+  render() {
+    if (this.props.canDelete) {
+      let clickHandler = this.props.clickHandler.bind(
+        this,
+        this.props.threadId
+      );
+      return (
+        <Button bsStyle="danger" onClick={clickHandler}>
+          Удалить
+        </Button>
+      );
+    }
+
+    return null;
   }
 }
 
