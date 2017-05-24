@@ -1,14 +1,21 @@
 <?php
   require_once('./mysqli_connect.php');
+  $table_threads = DB_TABLE_THREADS;
 
-  $query = "INSERT INTO threads Values(?, ?, ?, ?)";
-  $stmt = $dbc->prepare($query);
+  $title = $_POST['title'];
+  $original_poster = $_POST['original_poster'];
   $null_var = null;
-  $stmt->bind_param('isii', $null_var,
-                            $_POST['title'],
-                            $_POST['original_poster'],
-                            $null_var);
+
+  $query = "INSERT INTO
+              `$table_threads`
+            Values(?, ?, ?, ?)";
+
+
+  $stmt = $dbc->prepare($query);
+  $stmt->bind_param('isii', $null_var, $title, $original_poster, $null_var);
   $stmt->execute();
+
+  $data;
   if ($stmt->affected_rows == 1) {
     $data['status'] = 'ok';
   } else {

@@ -1,11 +1,15 @@
 <?php
   require_once('./mysqli_connect.php');
+  $table_users = DB_TABLE_USERS;
 
-  $data;
-  $query = 'SELECT * FROM users';
+  $query = 'SELECT
+              *
+            FROM
+              `$table_users`';
+
   $response = $dbc->query($query);
 
-  $index = 0;
+  $data; $index = 0;
   if ($response->num_rows > 0) {
     while ($row = $response->fetch_assoc()) {
       $data[$index++] = $row;

@@ -1,31 +1,34 @@
 <?php
   require_once('./mysqli_connect.php');
+  $table_messages = DB_TABLE_MESSAGES;
+  $table_users = DB_TABLE_USERS;
 
-  $data;
   $thread_id = $_GET['thread_id'];
+  
   $query = "SELECT
-              messages.id AS id,
-              messages.body AS body,
-              messages.date_posted AS datePosted,
+              m.id AS id,
+              m.body AS body,
+              m.date_posted AS datePosted,
               u1.id AS posterId,
               u1.username AS poster,
               u1.fullname AS posterName,
               u2.username AS replyToName
             FROM
-              messages
+              `$table_messages` AS m
             LEFT JOIN
-              users AS u1
+              `$table_users` AS u1
             ON
-              u1.id = messages.poster
+              u1.id = m.poster
             LEFT JOIN
-              users AS u2
+              `$table_users` AS u2
             ON
-              u2.id = messages.reply_to
+              u2.id = m.reply_to
             WHERE
-              messages.thread_id = '$thread_id'";
+              m.thread_id = '$thread_id'";
+
   $response = $dbc->query($query);
 
-  $index = 0;
+  $data; $index = 0;
   if ($response->num_rows > 0) {
     while ($row = $response->fetch_assoc()) {
       $data[$index++] = $row;

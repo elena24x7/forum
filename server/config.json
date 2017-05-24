@@ -1,0 +1,7 @@
+{
+  "table": {
+    "messages": "messages",
+    "threads": "threads",
+    "users": "users"
+  }
+}

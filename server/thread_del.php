@@ -1,10 +1,19 @@
 <?php
   require_once('./mysqli_connect.php');
+  $table_threads = DB_TABLE_THREADS;
 
-  $query = "DELETE FROM threads WHERE id = ?";
+  $thread_id = $_POST['thread_id'];
+
+  $query = "DELETE FROM
+              `$table_threads`
+            WHERE
+              id = ?";
+
   $stmt = $dbc->prepare($query);
-  $stmt->bind_param('i', $_POST['thread_id']);
+  $stmt->bind_param('i', $thread_id);
   $stmt->execute();
+
+  $data;
   if ($stmt->affected_rows == 1) {
     $data['status'] = 'ok';
   } else {
