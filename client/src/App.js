@@ -35,6 +35,7 @@ class App extends Component {
     fetch(`${baseURL}/login.php`, {method: 'POST', body: new FormData(form)})
       .then((response) => response.json())
       .then((json) => {
+        sessionStorage.setItem('user', JSON.stringify(json[0]));
         this.setState({
           user: json[0],
         });
@@ -44,6 +45,12 @@ class App extends Component {
       });
 
     form.reset();
+  }
+
+  componentWillMount() {
+    this.setState({
+      user: JSON.parse(sessionStorage.getItem('user')),
+    });
   }
 
   render() {
