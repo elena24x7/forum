@@ -67,6 +67,25 @@ class Messages extends Component {
     setTimeout(() => this.fetchMessages(), 500);
   }
 
+  deleteMessage(messageId, event) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    let formData = new FormData();
+    formData.append('message_id', messageId);
+
+    fetch(`${baseURL}/message_del.php`, {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => response.json())
+      .catch((err) => {
+        console.log(err);
+      });
+
+    setTimeout(() => this.fetchMessages(), 500);
+  }
+
   selectReplyTo(posterId, poster, posterName, event) {
     this.setState({
       replyTo: {
@@ -90,8 +109,16 @@ class Messages extends Component {
       }
     };
 
-    const messages = this.state.messages.map(
+    let messages = this.state.messages.map(
       ({id, body, datePosted, posterId, poster, posterName, replyToName}) => {
+        let canDelete = false;
+        if (this.props.user) {
+          canDelete = Number(this.props.user.id) === Number(posterId)
+            ? true
+            : false;
+          canDelete = Number(this.props.user.level) === 0 ? true : false;
+        }
+
         let clickHandler = this.selectReplyTo.bind(
           this,
           posterId,
@@ -105,6 +132,11 @@ class Messages extends Component {
             <p>{body}</p>
             <span>в {datePosted}</span>
             <ReplyTo replyToName={replyToName} />
+            <ButtonDelete
+              canDelete={canDelete}
+              clickHandler={this.deleteMessage.bind(this)}
+              messageId={id}
+            />
           </ListGroupItem>
         );
       }
@@ -142,12 +174,34 @@ class MessageForm extends Component {
             <FormControl type="text" name="body" placeholder="Сообщение" />
           </FormGroup>
           {' '}
-          <Button type="submit">{buttonText}</Button>
+          <Button bsStyle="primary" type="submit">{buttonText}</Button>
         </Form>
       );
     } else {
       return null;
     }
+  }
+}
+
+class ButtonDelete extends Component {
+  render() {
+    let styles = {maxWidth: 100};
+
+    if (this.props.canDelete) {
+      let clickHandler = this.props.clickHandler.bind(
+        this,
+        this.props.messageId
+      );
+      return (
+        <div style={styles}>
+          <Button bsStyle="danger" bsSize="small" block onClick={clickHandler}>
+            Удалить
+          </Button>
+        </div>
+      );
+    }
+
+    return null;
   }
 }
 
