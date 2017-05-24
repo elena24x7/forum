@@ -1,26 +1,27 @@
-import React, { Component } from 'react';
-import { Button, Form, FormControl, FormGroup, Table } from 'react-bootstrap';
+import React, {Component} from 'react';
+import {Button, Form, FormControl, FormGroup, Table} from 'react-bootstrap';
 
-import { baseURL } from './config.json';
+import {baseURL} from './config.json';
 import './Threads.css';
 
 class Threads extends Component {
   constructor() {
     super();
     this.state = {
-      threads: []
+      threads: [],
+      user: null,
     };
   }
 
   fetchThreads() {
     fetch(`${baseURL}/threads.php`)
-      .then(response => response.json())
-      .then(json => {
+      .then((response) => response.json())
+      .then((json) => {
         this.setState({
-          threads: json || []
+          threads: json || [],
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   }
@@ -33,10 +34,10 @@ class Threads extends Component {
 
     fetch(`${baseURL}/thread_add.php`, {
       method: 'POST',
-      body: formData
+      body: formData,
     })
-      .then(response => response.json())
-      .catch(err => {
+      .then((response) => response.json())
+      .catch((err) => {
         console.log(err);
       });
 
@@ -48,21 +49,17 @@ class Threads extends Component {
     this.fetchThreads();
   }
 
-  displayMessages(id) {
-    return () => {
-      this.props.displayMessages(id);
-    };
-  }
-
   render() {
     const threads = this.state.threads.map(
-      ({ id, title, dateCreated, poster }) => {
+      ({id, title, dateCreated, poster}) => {
+        let clickHandler = this.props.displayMessages.bind(this, {
+          id,
+          title,
+          dateCreated,
+          poster,
+        });
         return (
-          <tr
-            className="highlight"
-            onClick={this.displayMessages(id)}
-            key={id.toString()}
-          >
+          <tr className="highlight" onClick={clickHandler} key={id.toString()}>
             <td>{id}</td>
             <td>{dateCreated}</td>
             <td>{poster}</td>
@@ -71,6 +68,8 @@ class Threads extends Component {
         );
       }
     );
+
+    let loggedIn = this.props.user ? true : false;
 
     return (
       <div>
@@ -87,8 +86,8 @@ class Threads extends Component {
             {threads}
           </tbody>
         </Table>
-        <ThreadForm
-          loggedIn={this.props.loggedIn}
+        <FormCreate
+          loggedIn={loggedIn}
           createThread={this.createThread.bind(this)}
         />
       </div>
@@ -96,7 +95,7 @@ class Threads extends Component {
   }
 }
 
-class ThreadForm extends Component {
+class FormCreate extends Component {
   render() {
     if (this.props.loggedIn) {
       return (

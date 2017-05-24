@@ -7,6 +7,7 @@
               messages.id AS id,
               messages.body AS body,
               messages.date_posted AS datePosted,
+              u1.id AS posterId,
               u1.username AS poster,
               u1.fullname AS posterName,
               u2.username AS replyToName

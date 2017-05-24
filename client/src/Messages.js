@@ -1,38 +1,37 @@
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   Button,
   Form,
   FormGroup,
   FormControl,
   ListGroup,
-  ListGroupItem
+  ListGroupItem,
 } from 'react-bootstrap';
 
-import { baseURL } from './config.json';
+import {baseURL} from './config.json';
 
 class Messages extends Component {
   constructor() {
     super();
     this.state = {
       messages: [],
-      threadId: null,
       replyTo: {
+        posterId: null,
         poster: null,
-        posterName: null
-      }
+        posterName: null,
+      },
     };
   }
 
   fetchMessages() {
-    fetch(`${baseURL}/messages.php?thread_id=${this.props.threadId}`)
-      .then(response => response.json())
-      .then(json => {
+    fetch(`${baseURL}/messages.php?thread_id=${this.props.thread.id}`)
+      .then((response) => response.json())
+      .then((json) => {
         this.setState({
           messages: json || [],
-          threadId: this.props.threadId
         });
       })
-      .catch(err => {
+      .catch((err) => {
         console.log(err);
       });
   }
@@ -42,16 +41,16 @@ class Messages extends Component {
     let form = document.querySelector('form');
     let formData = new FormData(form);
     formData.append('poster', this.props.user.id);
-    formData.append('thread_id', this.props.threadId);
-    if (this.state.replyTo.poster)
-      formData.append('reply_to', this.props.threadId);
+    formData.append('thread_id', this.props.thread.id);
+    if (this.state.replyTo.posterId)
+      formData.append('reply_to', this.state.replyTo.posterId);
 
     fetch(`${baseURL}/message_add.php`, {
       method: 'POST',
-      body: formData
+      body: formData,
     })
-      .then(response => response.json())
-      .catch(err => {
+      .then((response) => response.json())
+      .catch((err) => {
         console.log(err);
       });
 
@@ -59,20 +58,22 @@ class Messages extends Component {
 
     this.setState({
       replyTo: {
+        posterId: null,
         poster: null,
-        posterName: null
-      }
+        posterName: null,
+      },
     });
 
     setTimeout(() => this.fetchMessages(), 500);
   }
 
-  selectReplyTo(id, poster, posterName, event) {
+  selectReplyTo(posterId, poster, posterName, event) {
     this.setState({
       replyTo: {
+        posterId,
         poster,
-        posterName
-      }
+        posterName,
+      },
     });
   }
 
@@ -81,7 +82,7 @@ class Messages extends Component {
   }
 
   render() {
-    const ReplyTo = props => {
+    const ReplyTo = (props) => {
       if (props.replyToName) {
         return <span> в ответ {props.replyToName}</span>;
       } else {
@@ -90,10 +91,10 @@ class Messages extends Component {
     };
 
     const messages = this.state.messages.map(
-      ({ id, body, datePosted, poster, posterName, replyToName }) => {
+      ({id, body, datePosted, posterId, poster, posterName, replyToName}) => {
         let clickHandler = this.selectReplyTo.bind(
           this,
-          id,
+          posterId,
           poster,
           posterName
         );
@@ -109,14 +110,17 @@ class Messages extends Component {
       }
     );
 
+    let loggedIn = this.props.user ? true : false;
+
     return (
       <div>
+        <h1>{this.props.thread.title}</h1>
         <ListGroup>
           {messages}
         </ListGroup>
         <MessageForm
           replyTo={this.state.replyTo}
-          loggedIn={this.props.loggedIn}
+          loggedIn={loggedIn}
           postMessage={this.postMessage.bind(this)}
         />
       </div>
@@ -129,7 +133,7 @@ class MessageForm extends Component {
     if (this.props.loggedIn) {
       let buttonText = 'Написать';
 
-      if (this.props.replyTo.poster)
+      if (this.props.replyTo.posterId)
         buttonText = `Ответить ${this.props.replyTo.posterName}`;
 
       return (
