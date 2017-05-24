@@ -1,3 +1,7 @@
 {
-  "extends": ["eslint:recommended", "google", "react-app"]
+  "extends": ["eslint:recommended", "google", "react-app"],
+  "rules": {
+    "require-jsdoc": "off",
+    "no-console": "warn"
+  }
 }
