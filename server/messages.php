@@ -4,27 +4,27 @@
   $table_users = DB_TABLE_USERS;
 
   $thread_id = $_GET['thread_id'];
-  
+
   $query = "SELECT
-              m.id AS id,
-              m.body AS body,
-              m.date_posted AS datePosted,
-              u1.id AS posterId,
-              u1.username AS poster,
-              u1.fullname AS posterName,
-              u2.username AS replyToName
+              m1.id AS id,
+              m1.body AS body,
+              m1.date_posted AS datePosted,
+              u.id AS posterId,
+              u.username AS poster,
+              u.fullname AS posterName,
+              m2.id AS replyTo
             FROM
-              `$table_messages` AS m
+              `$table_messages` AS m1
             LEFT JOIN
-              `$table_users` AS u1
+              `$table_users` AS u
             ON
-              u1.id = m.poster
+              u.id = m1.poster
             LEFT JOIN
-              `$table_users` AS u2
+              `$table_messages` AS m2
             ON
-              u2.id = m.reply_to
+              m2.id = m1.reply_to
             WHERE
-              m.thread_id = '$thread_id'";
+              m1.thread_id = '$thread_id'";
 
   $response = $dbc->query($query);
 
@@ -37,9 +37,26 @@
     $data = $dbc->error;
   }
 
+  function buildTree(array $messages, $reply_to = null) {
+    $branch = array();
+
+    foreach ($messages as $message) {
+      if ($message['replyTo'] == $reply_to) {
+        $children = buildTree($messages, $message['id']);
+        if ($children) {
+          $message['replies'] = $children;
+        }
+        $branch[$message['id']] = $message;
+        unset($message);
+      }
+    }
+
+    return $branch;
+  }
+
   header('Access-Control-Allow-Origin: *');
   header('Content-Type: application/json');
-  echo json_encode($data);
+  echo json_encode(buildTree($data));
 
   $dbc->close();
 ?>

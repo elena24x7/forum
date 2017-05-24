@@ -1,14 +1,18 @@
 import React, {Component} from 'react';
 import {
+  Col,
   Button,
   Form,
-  FormGroup,
   FormControl,
+  FormGroup,
+  InputGroup,
   ListGroup,
   ListGroupItem,
+  Row,
 } from 'react-bootstrap';
 
 import {baseURL} from './config.json';
+import './Messages.css';
 
 class Messages extends Component {
   constructor() {
@@ -16,9 +20,8 @@ class Messages extends Component {
     this.state = {
       messages: [],
       replyTo: {
-        posterId: null,
-        poster: null,
-        posterName: null,
+        msg: null,
+        name: null,
       },
     };
   }
@@ -42,8 +45,8 @@ class Messages extends Component {
     let formData = new FormData(form);
     formData.append('poster', this.props.user.id);
     formData.append('thread_id', this.props.thread.id);
-    if (this.state.replyTo.posterId)
-      formData.append('reply_to', this.state.replyTo.posterId);
+    if (this.state.replyTo.msg)
+      formData.append('reply_to', this.state.replyTo.msg);
 
     fetch(`${baseURL}/message_add.php`, {
       method: 'POST',
@@ -58,9 +61,8 @@ class Messages extends Component {
 
     this.setState({
       replyTo: {
-        posterId: null,
-        poster: null,
-        posterName: null,
+        msg: null,
+        name: null,
       },
     });
 
@@ -86,12 +88,11 @@ class Messages extends Component {
     setTimeout(() => this.fetchMessages(), 500);
   }
 
-  selectReplyTo(posterId, poster, posterName, event) {
+  selectReplyTo(msg, name, event) {
     this.setState({
       replyTo: {
-        posterId,
-        poster,
-        posterName,
+        msg,
+        name,
       },
     });
   }
@@ -101,64 +102,89 @@ class Messages extends Component {
   }
 
   render() {
-    const ReplyTo = (props) => {
-      if (props.replyToName) {
-        return <span> в ответ {props.replyToName}</span>;
-      } else {
-        return null;
-      }
+    let ReplyTo = (props) => {
+      if (props.msg) return <span> в ответ на сообщение #{props.msg}</span>;
+
+      return null;
     };
 
-    let messages = this.state.messages.map(
-      ({id, body, datePosted, posterId, poster, posterName, replyToName}) => {
-        let canDelete = false;
-        if (this.props.user) {
-          if (
-            Number(this.props.user.level) === 0 ||
-            Number(this.props.user.level) === 1
-          ) {
-            canDelete = true;
-          } else if (Number(this.props.user.id) === Number(posterId)) {
-            canDelete = true;
+    let parseObject = (object, action, accumulator = [], depth = 0) => {
+      for (let key in object) {
+        if (object.hasOwnProperty(key)) {
+          let element = object[key];
+          let result = action(element, depth);
+          accumulator.push(result);
+          if (element.replies) {
+            parseObject(element.replies, action, accumulator, ++depth);
+            depth--;
           }
         }
-
-        let clickHandler = this.selectReplyTo.bind(
-          this,
-          posterId,
-          poster,
-          posterName
-        );
-
-        return (
-          <ListGroupItem key={id.toString()} onClick={clickHandler}>
-            <h4>{posterName} ({poster})</h4>
-            <p>{body}</p>
-            <span>в {datePosted}</span>
-            <ReplyTo replyToName={replyToName} />
-            <ButtonDelete
-              canDelete={canDelete}
-              clickHandler={this.deleteMessage.bind(this)}
-              messageId={id}
-            />
-          </ListGroupItem>
-        );
       }
-    );
+      return accumulator;
+    };
+
+    let buildMessage = (msg, depth) => {
+      const {id, body, datePosted, posterId, poster, posterName, replyTo} = msg;
+
+      let canDelete = false;
+      if (this.props.user) {
+        if (
+          Number(this.props.user.level) === 0 ||
+          Number(this.props.user.level) === 1
+        ) {
+          canDelete = true;
+        } else if (Number(this.props.user.id) === Number(posterId)) {
+          canDelete = true;
+        }
+      }
+
+      let clickHandler = this.selectReplyTo.bind(this, id, posterName);
+
+      let styles = {marginLeft: `${depth * 2}em`};
+      return (
+        <ListGroupItem
+          className="msg-item"
+          style={styles}
+          key={id.toString()}
+          onClick={clickHandler}
+        >
+          <h4>{posterName} ({poster})</h4>
+          <p>{body}</p>
+          <span>Сообщение #{id} </span>
+          <span>от {datePosted}</span>
+          <ReplyTo msg={replyTo} />
+          <ButtonDelete
+            canDelete={canDelete}
+            clickHandler={this.deleteMessage.bind(this)}
+            messageId={id}
+          />
+        </ListGroupItem>
+      );
+    };
+
+    let messageComponents = parseObject(this.state.messages, buildMessage);
 
     let loggedIn = this.props.user ? true : false;
 
     return (
       <div>
-        <h1>{this.props.thread.title}</h1>
-        <ListGroup>
-          {messages}
-        </ListGroup>
-        <MessageForm
-          replyTo={this.state.replyTo}
-          loggedIn={loggedIn}
-          postMessage={this.postMessage.bind(this)}
-        />
+        <Row>
+          <Col lg={12}>
+            <h2>{this.props.thread.title}</h2>
+            <ListGroup>
+              {messageComponents}
+            </ListGroup>
+          </Col>
+        </Row>
+        <Row>
+          <Col lg={12}>
+            <MessageForm
+              replyTo={this.state.replyTo}
+              loggedIn={loggedIn}
+              postMessage={this.postMessage.bind(this)}
+            />
+          </Col>
+        </Row>
       </div>
     );
   }
@@ -169,16 +195,19 @@ class MessageForm extends Component {
     if (this.props.loggedIn) {
       let buttonText = 'Написать';
 
-      if (this.props.replyTo.posterId)
-        buttonText = `Ответить ${this.props.replyTo.posterName}`;
+      if (this.props.replyTo.name)
+        buttonText = `Ответить ${this.props.replyTo.name}`;
 
       return (
-        <Form inline onSubmit={this.props.postMessage}>
+        <Form onSubmit={this.props.postMessage}>
           <FormGroup>
-            <FormControl type="text" name="body" placeholder="Сообщение" />
+            <InputGroup>
+              <FormControl type="text" name="body" placeholder="Сообщение" />
+              <InputGroup.Button>
+                <Button bsStyle="primary" type="submit">{buttonText}</Button>
+              </InputGroup.Button>
+            </InputGroup>
           </FormGroup>
-          {' '}
-          <Button bsStyle="primary" type="submit">{buttonText}</Button>
         </Form>
       );
     } else {
@@ -189,19 +218,20 @@ class MessageForm extends Component {
 
 class ButtonDelete extends Component {
   render() {
-    let styles = {maxWidth: 100};
-
     if (this.props.canDelete) {
       let clickHandler = this.props.clickHandler.bind(
         this,
         this.props.messageId
       );
       return (
-        <div style={styles}>
-          <Button bsStyle="danger" bsSize="small" block onClick={clickHandler}>
-            Удалить
-          </Button>
-        </div>
+        <Button
+          bsStyle="danger"
+          bsSize="xsmall"
+          className="msg-del"
+          onClick={clickHandler}
+        >
+          Удалить
+        </Button>
       );
     }
 
