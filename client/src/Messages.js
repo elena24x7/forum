@@ -113,10 +113,11 @@ class Messages extends Component {
       ({id, body, datePosted, posterId, poster, posterName, replyToName}) => {
         let canDelete = false;
         if (this.props.user) {
-          canDelete = Number(this.props.user.id) === Number(posterId)
-            ? true
-            : false;
-          canDelete = Number(this.props.user.level) === 0 ? true : false;
+          if (Number(this.props.user.level) === 0) {
+            canDelete = true;
+          } else if (Number(this.props.user.id) === Number(posterId)) {
+            canDelete = true;
+          }
         }
 
         let clickHandler = this.selectReplyTo.bind(

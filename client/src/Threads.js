@@ -9,7 +9,6 @@ class Threads extends Component {
     super();
     this.state = {
       threads: [],
-      user: null,
     };
   }
 
@@ -73,10 +72,11 @@ class Threads extends Component {
       ({id, title, dateCreated, poster, posterId}) => {
         let canDelete = false;
         if (this.props.user) {
-          canDelete = Number(this.props.user.id) === Number(posterId)
-            ? true
-            : false;
-          canDelete = Number(this.props.user.level) === 0 ? true : false;
+          if (Number(this.props.user.level) === 0) {
+            canDelete = true;
+          } else if (Number(this.props.user.id) === Number(posterId)) {
+            canDelete = true;
+          }
         }
 
         let clickHandler = this.props.displayMessages.bind(this, {
